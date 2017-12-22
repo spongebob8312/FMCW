@@ -2,8 +2,8 @@
 clear
 clc
 delete(instrfindall);
-%s = serial('/dev/tty.usbmodem1431', 'BaudRate', 115200);
-s = Bluetooth('EE704', 1);
+s = serial('/dev/tty.usbmodem1431', 'BaudRate', 115200);
+%s = Bluetooth('EE704', 1);
 fopen(s);
 
 
@@ -23,6 +23,7 @@ T = 1/Fsamp;             % Sampling period
 L = 250;             % Length of signal
 t = (0:L-1)*T;        % Time vector
 signal = eye(1,L);
+Order = 15;
 
 composedSignal_length = 2000;  
 composedSignal = eye(1, composedSignal_length);
