@@ -84,7 +84,7 @@ while ishandle(haxes)
     text(f(loc),IIRSig(loc),txt1,'HorizontalAlignment','right');
     
 
-    pause(0.04); %給足夠時間繪圖不然會崩
+    pause(0.5); %give it some time to plot
     
  
 end
