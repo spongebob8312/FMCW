@@ -2,7 +2,7 @@
 clear
 clc
 delete(instrfindall);
-s = serial('/dev/cu.usbmodem1431', 'BaudRate', 115200);
+s = serial('/dev/cu.usbmodem1461', 'BaudRate', 115200);
 fopen(s);
 
 a = 'b';
@@ -18,12 +18,13 @@ disp('Serial Communication setup.');
  %% Sampling Config
 Fsamp = 500;            % Sampling frequency                    
 T = 1/Fsamp;             % Sampling period       
-L = 250;             % Length of signal
+L = 500;             % Length of signal
 t = (0:L-1)*T;        % Time vector
 signal = eye(1,L);
     
 composedSignal_length = 2000;  
 composedSignal = eye(1, composedSignal_length);
+composedSignal_detrended = composedSignal;
 segments = composedSignal_length / L;
 composedSignalTime = (0:segments*L-1)*T;
     
@@ -42,17 +43,17 @@ while ishandle(haxes)
     
     composedSignal = circshift(composedSignal,-L);
     composedSignal((segments-1)*L+1:segments*L) = signal(1:L);
-    composedSignal = detrend(composedSignal);
+    composedSignal_detrended = detrend(composedSignal);
     % plot 4 secs signal
     subplot(2,2,1);
-    set(haxes, 'XData', 1000*composedSignalTime(1:composedSignal_length), 'YData', composedSignal(1:composedSignal_length));
+    set(haxes, 'XData', composedSignalTime, 'YData', composedSignal);
     title('Signal')
-    xlabel('t (milliseconds)')
+    xlabel('t (seconds)')
     ylabel('signal(t)')
 
     subplot(2,2,2)
-    IIR = filter(IIRButterworthHighPass, composedSignal);
-    [IIRSig, f] = freqDomain(Fsamp, IIR, L);
+    IIR = filter(IIRButterworthHighPass, composedSignal_detrended);
+    [IIRSig, f] = freqDomain(Fsamp, IIR, composedSignal_length);
     plot(f, IIRSig);
     xlim([0 20]);
     title('IIR');
@@ -60,8 +61,8 @@ while ishandle(haxes)
     xlabel('Freq(Hz)');
 
     subplot(2,2,3)
-    FIR = filter(FIRChebysevHP, composedSignal);
-    [FIRSig, f] = freqDomain(Fsamp, FIR, L);
+    FIR = filter(FIRChebysevHP, composedSignal_detrended);
+    [FIRSig, f] = freqDomain(Fsamp, FIR, composedSignal_length);
     plot(f, FIRSig);
     xlim([0 20]);
     title('FIR');
