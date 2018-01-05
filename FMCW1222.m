@@ -2,7 +2,8 @@
 clear
 clc
 delete(instrfindall);
-s = serial('/dev/cu.usbmodem1461', 'BaudRate', 115200);
+%s = serial('/dev/cu.usbmodem1461', 'BaudRate', 115200);
+s = Bluetooth('EE704', 1);
 fopen(s);
 
 a = 'b';
@@ -30,7 +31,7 @@ composedSignalTime = (0:segments*L-1)*T;
     
 
 %% Setup fig
-subplot(2,2,1);
+subplot(3,1,1);
 haxes = plot(0 , 0);
 pause(1);
 %% plot
@@ -45,47 +46,40 @@ while ishandle(haxes)
     composedSignal((segments-1)*L+1:segments*L) = signal(1:L);
     composedSignal_detrended = detrend(composedSignal);
     % plot 4 secs signal
-    subplot(2,2,1);
+    subplot(3,1,1);
     set(haxes, 'XData', composedSignalTime, 'YData', composedSignal);
     title('Signal')
     xlabel('t (seconds)')
     ylabel('signal(t)')
 
-    subplot(2,2,2)
-    IIR = filter(IIRButterworthHighPass, composedSignal_detrended);
-    [IIRSig, f] = freqDomain(Fsamp, IIR, composedSignal_length);
-    plot(f, IIRSig);
-    xlim([0 20]);
-    title('IIR');
-    ylabel('|P|');
-    xlabel('Freq(Hz)');
-
-    subplot(2,2,3)
+    subplot(3,1,2)
     FIR = filter(FIRChebysevHP, composedSignal_detrended);
+    plot(composedSignalTime, FIR);
+    title('FIRSig');
+    xlabel('t (seconds)');
+    ylabel('FIRSig(t)');
+
+
+    
+    subplot(3,1,3)
     [FIRSig, f] = freqDomain(Fsamp, FIR, composedSignal_length);
     plot(f, FIRSig);
-    xlim([0 20]);
+    xlim([0 40]);
     title('FIR');
     ylabel('|P|');
     xlabel('Freq(Hz)');
 
-    subplot(2,2,4)
-    plot(f, IIRSig, f, FIRSig);
-    legend('IIR','FIR')
-    xlim([0 20]);
-    title('FIR & IIR Comparison');
-    ylabel('|P|');
-    xlabel('Freq(Hz)');
+    
 
-    [M, loc] = max(IIRSig);
+    [M, loc] = max(FIRSig);
     obj_distance = (100 * 3 * 10^8 * 0.4675 * 2 * f / (4 * 394 * 10^6)) - 20;
     disp(['distance = ' num2str(round(obj_distance(loc))) 'cm']);
  
     txt1 = [num2str(f(loc)) 'Hz\rightarrow'];
-    text(f(loc),IIRSig(loc),txt1,'HorizontalAlignment','right');
+    text(f(loc),FIRSig(loc),txt1,'HorizontalAlignment','right');
     
 
-    pause(0.5); %give it some time to plot
+    pause(0.6); %give it some time to plot
     
  
 end
